@@ -82,14 +82,39 @@ Deploy pfSense on a dedicated Qotom Q10722C appliance to serve as the primary fi
 - Assigned interfaces:
   - **WAN**: igb0
   - **LAN**: igb1 (IP: 192.168.1.1/24)
-- Enabled DHCP on LAN, disabled on WAN.
 - Set admin password.
 - Accessed pfSense web GUI from lab workstation.
 
 #### 4. Post-Install Setup
 - Applied basic outbound NAT/firewall rules.
-- Enabled DNS Resolver for internal name resolution.
 - Updated system and packages.
+- Enable DNS Resolver
+  1. Log in to the pfSense Web GUI
+
+Open your browser and go to: http://192.168.1.1 (or your LAN IP)
+
+Log in with the admin credentials
+
+2. Go to Services > DNS Resolver
+
+
+
+**Navigation:** `Services > DNS Resolver`
+
+| Setting                          | Value                          | Notes                                                  |
+|----------------------------------|--------------------------------|--------------------------------------------------------|
+| **Enable DNS Resolver**          | ✅ Enabled                     | Turns on the resolver service                          |
+| **Listen Port**                  | `53` (default)                 | Leave as default unless using alternate port           |
+| **Network Interfaces**           | LAN + All VLANs                | Select interfaces where clients will query DNS         |
+| **Outgoing Network Interfaces**  | WAN or default                 | Used for external lookups                              |
+| **Enable DNSSEC Support**        | Optional                       | Can be enabled or disabled; not required               |
+| **DHCP Registration**            | ✅ Enabled                     | Registers DHCP clients in DNS                          |
+| **Static DHCP Mapping**          | ✅ Enabled                     | Registers static mappings (e.g., servers)              |
+| **Enable Forwarding Mode**       | 🔁 Disabled                    | Disable to allow full resolver functionality           |
+
+Click **Save** and then **Apply Changes** if prompted.
+
+
 
 ### Results
 - pfSense operational and accessible via browser.
