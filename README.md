@@ -89,7 +89,7 @@ Deploy pfSense on a dedicated Qotom Q10722C appliance to serve as the primary fi
 - Applied basic outbound NAT/firewall rules.
 - Updated system and packages.
 - Enable DNS Resolver
-  1. Log in to the pfSense Web GUI
+1. Log in to the pfSense Web GUI
 
 Open your browser and go to: http://192.168.1.1 (or your LAN IP)
 
