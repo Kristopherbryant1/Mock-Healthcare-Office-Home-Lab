@@ -107,13 +107,98 @@ Segment the lab network using VLANs to separate server traffic, clinical worksta
 
 ---
 
-### 🔧 pfSense VLAN Configuration
+## 🔧 pfSense VLAN Setup
 
-1. **Create VLANs** under `Interfaces > Assignments > VLANs`, using parent interface `igb1`.
-2. **Assign Interfaces** and set static IPs:
+1. **Create VLANs**
+   - Navigate to: `Interfaces > Assignments > VLANs`
+   - Create the following VLANs on the parent interface `igb1` (LAN):
+     - VLAN 10 – Servers
+     - VLAN 20 – Clinical
+     - VLAN 30 – WiFi
+     - VLAN 40 – IoT
 
-```text
-VLAN 10 → 192.168.10.1  
-VLAN 20 → 192.168.20.1  
-VLAN 30 → 192.168.30.1  
-VLAN 40 → 192.168.40.1
+2. **Assign VLAN Interfaces**
+   - Go to: `Interfaces > Assignments`
+   - Add and enable each VLAN interface
+   - Assign the following static IP addresses:
+
+   | VLAN | Interface Name      | IP Address       |
+   |------|---------------------|------------------|
+   | 10   | VLAN10_Servers      | 192.168.10.1     |
+   | 20   | VLAN20_Clinical     | 192.168.20.1     |
+   | 30   | VLAN30_WiFi         | 192.168.30.1     |
+   | 40   | VLAN40_IoT          | 192.168.40.1     |
+
+3. **Enable DHCP**
+   - Navigate to: `Services > DHCP Server`
+   - Enable DHCP for each VLAN interface with limited ranges  
+     Example:
+     - VLAN 10: `192.168.10.100 – 192.168.10.199`
+     - VLAN 20: `192.168.20.100 – 192.168.20.199`
+     - VLAN 30: `192.168.30.100 – 192.168.30.199`
+     - VLAN 40: `192.168.40.100 – 192.168.40.199`
+
+4. **Add Basic Firewall Rules**
+   - Go to: `Firewall > Rules`, select each VLAN interface
+   - Add the following rules:
+     - Allow DNS (UDP/53) to pfSense interface
+     - Allow DHCP (UDP/67,68)
+     - Allow HTTP/HTTPS (TCP/80,443) to WAN
+   - Block inter-VLAN traffic by default to enforce segmentation
+
+---
+
+## 🧰 TP-Link TL-SG108E VLAN Configuration
+
+> ⚠️ Ensure the switch firmware is up to date to support full 802.1Q VLAN tagging.
+
+1. **Access the Switch Management Interface**
+   - Use TP-Link Easy Smart Configuration Utility **or** browser (`http://192.168.0.1`)
+   - Log in with admin credentials
+
+2. **Create VLANs**
+   - Navigate to `802.1Q VLAN > VLAN Config`
+   - Add VLANs 10, 20, 30, and 40
+
+3. **Configure Port VLAN Membership**
+
+   | Port | Connected To           | Tagged VLANs   | Untagged VLAN | PVID |
+   |------|------------------------|----------------|----------------|------|
+   | 1    | pfSense LAN (igb1)     | 10,20,30,40     | —              | 1    |
+   | 2    | Future Server 1        | —               | 10             | 10   |
+   | 3    | Future Server 2        | —               | 10             | 10   |
+   | 4    | Clinical Workstation   | —               | 20             | 20   |
+   | 5    | Wireless Access Point  | 30 (Tagged)     | —              | 1    |
+   | 6    | Printer / IoT Device   | —               | 40             | 40   |
+   | 7–8  | Spare / future use     | As needed       | —              | —    |
+
+- ✅ **Port 1** is the **trunk port** carrying all VLANs to/from pfSense  
+- 📌 Each device port is an **access port** allowing only one untagged VLAN
+
+---
+
+## 📌 Result Summary
+
+- ✅ pfSense is routing VLANs 10, 20, 30, and 40
+- ✅ DHCP and internet access confirmed per VLAN
+- ✅ TP-Link switch pre-configured for expected devices
+- 🔒 Inter-VLAN traffic is blocked (default deny)
+- 🧱 Network is now ready for:
+  - Server deployment (VLAN 10)
+  - Clinical workstation(s) (VLAN 20)
+  - WiFi access point(s) (VLAN 30)
+  - IoT printers/devices (VLAN 40)
+
+---
+
+## 📅 What's Next – Phase 4: Windows Server & EHR
+
+In the next phase:
+
+- ⚙️ Install **Windows Server** on VLAN 10
+- 🧱 Set up **Active Directory**, **DNS**, and domain structure
+- 💻 Configure workstations to join the domain (VLAN 20)
+- 🏥 Deploy **EHR software** for testing/learning
+- 🔐 Implement Group Policy and security practices
+
+Stay tuned for full server builds and EHR deployment in Phase 4.
